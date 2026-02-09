@@ -1,18 +1,40 @@
-.DS_Store
-.venv/
+# ===== Python =====
 __pycache__/
-*.pyc
-.pytest_cache/
-.env
-.idea/
-.vscode/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.so
+*.dll
+.Python
 build/
 dist/
-*.egg-info/
-resources/
-.ruff_cache/
-AGENTS.md
-.mypy_cache/
+.venv/
+.env
+.python-version
+
+# ===== Testing =====
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage.xml
+.htmlcov/
+.tox/
+
+# ===== IDE/Editor =====
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+*.swn
+*.swo
+*.bak
+*.tmp
+
+# ===== Build/Generated =====
+resources/
+.tmp/
+pyproject.sanitized.toml
 sanitize_pyproject.py
-pyproject.sanitized.toml.python-version

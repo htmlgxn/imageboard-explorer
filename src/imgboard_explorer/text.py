@@ -1,6 +1,5 @@
 import html
 import re
-from typing import Optional
 from urllib.parse import urlparse
 
 _BR_RE = re.compile(r"(<br\s*/?>)+", re.IGNORECASE)
@@ -20,7 +19,7 @@ def _is_safe_url(url: str) -> bool:
         return False
 
 
-def html_to_text(raw: Optional[str]) -> str:
+def html_to_text(raw: str | None) -> str:
     if not raw:
         return ""
     text = raw.replace("<wbr>", "")

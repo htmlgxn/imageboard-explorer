@@ -3,12 +3,9 @@ import html as html_lib
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
 
 import uvicorn
-from fastapi import FastAPI
-from fastapi import Path as PathParam
-from fastapi import Request
+from fastapi import FastAPI, Path as PathParam, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -135,7 +132,7 @@ async def _load_thread_posts(board: str, thread_id: int) -> list[dict]:
 
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request, selected: Optional[str] = None) -> HTMLResponse:
+async def home(request: Request, selected: str | None = None) -> HTMLResponse:
     try:
         boards = await _load_boards()
     except Exception:
@@ -190,7 +187,7 @@ async def home(request: Request, selected: Optional[str] = None) -> HTMLResponse
 async def catalog(
     request: Request,
     board: str = PathParam(..., pattern=r"^[a-z]{1,6}$"),
-    selected: Optional[int] = None,
+    selected: int | None = None,
 ) -> HTMLResponse:
     try:
         payload = await client.fetch_json(f"/{board}/catalog.json", ttl_seconds=30)
@@ -262,7 +259,7 @@ async def thread(
     request: Request,
     board: str = PathParam(..., pattern=r"^[a-z]{1,6}$"),
     thread_id: int = PathParam(..., ge=1),
-    selected: Optional[int] = None,
+    selected: int | None = None,
 ) -> HTMLResponse:
     try:
         posts = await _load_thread_posts(board, thread_id)

@@ -3,7 +3,7 @@ import json
 import time
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
@@ -12,7 +12,7 @@ import httpx
 class CacheEntry:
     data: Any
     expires_at: float
-    last_modified: Optional[str]
+    last_modified: str | None
 
 
 class TTLCache:
@@ -20,7 +20,7 @@ class TTLCache:
         self._entries: OrderedDict[str, CacheEntry] = OrderedDict()
         self._max_size = max_size
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         entry = self._entries.get(key)
         if not entry:
             return None
@@ -31,7 +31,7 @@ class TTLCache:
         self._entries.move_to_end(key)
         return entry.data
 
-    def get_entry(self, key: str) -> Optional[CacheEntry]:
+    def get_entry(self, key: str) -> CacheEntry | None:
         entry = self._entries.get(key)
         if entry and entry.expires_at <= time.monotonic():
             del self._entries[key]
@@ -41,7 +41,7 @@ class TTLCache:
         return entry
 
     def set(
-        self, key: str, data: Any, ttl_seconds: float, last_modified: Optional[str]
+        self, key: str, data: Any, ttl_seconds: float, last_modified: str | None
     ) -> None:
         # Evict expired entries first
         now = time.monotonic()
@@ -86,7 +86,7 @@ class ChanAPIClient:
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
         self._cache = TTLCache()
         self._rate_limiter = RateLimiter(interval_seconds=1.0)
 

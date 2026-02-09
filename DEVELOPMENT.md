@@ -4,7 +4,7 @@ This guide covers how to set up the development environment and contribute to co
 
 ## Prerequisites
 
-- Python 3.13+
+- Python 3.14+
 - [uv](https://docs.astral.sh/uv/) package manager
 
 ## Getting Started
@@ -36,7 +36,7 @@ git clone https://github.com/htmlgxn/comfy-imageboard-explorer.git
 cd comfy-imageboard-explorer
 
 # Install dependencies (including dev dependencies)
-uv sync --extra dev
+uv sync --dev
 
 # Run the application
 uv run imgboard-explorer
@@ -78,9 +78,9 @@ uv run pytest tests/ -k "test_cache" -v
 The project uses several tools to maintain code quality:
 
 ```bash
-# Format code
-uv run black src/ tests/
-uv run isort src/ tests/
+# Format and lint code
+uv run ruff format src/ tests/
+uv run ruff check --fix src/ tests/
 
 # Type checking
 uv run mypy src/ tests/

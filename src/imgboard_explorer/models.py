@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -9,50 +7,50 @@ class Board(BaseModel):
     ws_board: int
     pages: int
     per_page: int
-    meta_description: Optional[str] = None
+    meta_description: str | None = None
 
 
 class CatalogThread(BaseModel):
     no: int
-    now: Optional[str] = None
-    time: Optional[int] = None
-    name: Optional[str] = None
-    sub: Optional[str] = None
-    com: Optional[str] = None
-    replies: Optional[int] = None
-    images: Optional[int] = None
-    tim: Optional[int] = None
-    ext: Optional[str] = None
-    country: Optional[str] = None
-    country_name: Optional[str] = None
+    now: str | None = None
+    time: int | None = None
+    name: str | None = None
+    sub: str | None = None
+    com: str | None = None
+    replies: int | None = None
+    images: int | None = None
+    tim: int | None = None
+    ext: str | None = None
+    country: str | None = None
+    country_name: str | None = None
 
 
 class ThreadPost(BaseModel):
     no: int
     resto: int = 0
-    now: Optional[str] = None
-    time: Optional[int] = None
-    name: Optional[str] = None
-    com: Optional[str] = None
-    tim: Optional[int] = None
-    ext: Optional[str] = None
-    filename: Optional[str] = None
-    fsize: Optional[int] = None
-    country: Optional[str] = None
-    country_name: Optional[str] = None
+    now: str | None = None
+    time: int | None = None
+    name: str | None = None
+    com: str | None = None
+    tim: int | None = None
+    ext: str | None = None
+    filename: str | None = None
+    fsize: int | None = None
+    country: str | None = None
+    country_name: str | None = None
 
 
 class Thread(BaseModel):
     posts: list[ThreadPost]
 
 
-def thumbnail_url(board: str, tim: Optional[int]) -> Optional[str]:
+def thumbnail_url(board: str, tim: int | None) -> str | None:
     if not tim:
         return None
     return f"https://i.4cdn.org/{board}/{tim}s.jpg"
 
 
-def image_url(board: str, tim: Optional[int], ext: Optional[str]) -> Optional[str]:
+def image_url(board: str, tim: int | None, ext: str | None) -> str | None:
     if not tim or not ext:
         return None
     return f"https://i.4cdn.org/{board}/{tim}{ext}"
@@ -73,7 +71,7 @@ IMAGE_EXTS = {
 VIDEO_EXTS = {".webm", ".mp4", ".m4v", ".ogv"}
 
 
-def media_kind(ext: Optional[str]) -> str:
+def media_kind(ext: str | None) -> str:
     if not ext:
         return "file"
     ext_lower = ext.lower()
@@ -84,7 +82,7 @@ def media_kind(ext: Optional[str]) -> str:
     return "file"
 
 
-def format_bytes(value: Optional[int]) -> Optional[str]:
+def format_bytes(value: int | None) -> str | None:
     if value is None:
         return None
     size = float(value)
@@ -98,7 +96,7 @@ def format_bytes(value: Optional[int]) -> Optional[str]:
     return None
 
 
-def country_flag_url(country_code: Optional[str]) -> Optional[str]:
+def country_flag_url(country_code: str | None) -> str | None:
     """Generate country flag URL from country code."""
     if not country_code:
         return None

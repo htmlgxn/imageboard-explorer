@@ -3,7 +3,7 @@ name = "comfy-imageboard-explorer"
 version = "2026.2.8"
 description = "A TUI-style webapp for browsing imageboard content in a simplified view."
 readme = "README.md"
-requires-python = ">=3.13.1"
+requires-python = ">=3.14.3"
 license = {text = "Unlicense"}
 authors = [
     {name = "Ben Chitty", email = "htmlgxn@pm.me"},
@@ -12,7 +12,7 @@ dependencies = [
     "fastapi==0.115.8",
     "httpx==0.27.2",
     "jinja2==3.1.4",
-    "pydantic==2.10.4",
+    "pydantic>=2.12.5",
     "uvicorn==0.30.6",
 ]
 
@@ -31,17 +31,24 @@ build-backend = "hatchling.build"
 packages = ["src/imgboard_explorer"]
 include = ["src/imgboard_explorer/templates/*", "src/imgboard_explorer/static/**/*"]
 
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ["py313"]
+target-version = "py314"
 
-[tool.isort]
-profile = "black"
-line_length = 88
-multi_line_output = 3
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "C90", "UP", "B", "A", "C4", "T10", "ISC", "ICN", "G", "PIE", "PT", "Q", "RSE", "RET", "SIM", "TID", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "RUF"]
+ignore = ["E501", "C901", "PLW2901", "PLR0913", "PLR2004", "TRY003", "TRY300", "RET504"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["imgboard_explorer"]
+combine-as-imports = true
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 warn_return_any = true
 strict_optional = true
 disallow_untyped_defs = true
