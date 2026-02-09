@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
-  <rect width="240" height="240" fill="#0c0c09" stroke="#43e327" stroke-width="2"/>
-  <line x1="12" y1="12" x2="228" y2="228" stroke="#43e327" stroke-width="2"/>
-  <line x1="228" y1="12" x2="12" y2="228" stroke="#43e327" stroke-width="2"/>
-  <text x="120" y="122" fill="#43e327" font-family="Roboto Mono, monospace" font-size="20" text-anchor="middle">img</text>
-</svg>

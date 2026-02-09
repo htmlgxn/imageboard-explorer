@@ -10,3 +10,9 @@ build/
 dist/
 *.egg-info/
 resources/
+.ruff_cache/
+AGENTS.md
+.mypy_cache/
+.pytest_cache/
+sanitize_pyproject.py
+pyproject.sanitized.toml.python-version
