@@ -1,9 +1,9 @@
 [project]
 name = "comfy-imageboard-explorer"
-version = "2026.2.8"
+version = "2026.2.9"
 description = "A TUI-style webapp for browsing imageboard content in a simplified view."
 readme = "README.md"
-requires-python = ">=3.14.3"
+requires-python = ">=3.14.2"
 license = {text = "Unlicense"}
 authors = [
     {name = "Ben Chitty", email = "htmlgxn@pm.me"},
