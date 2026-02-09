@@ -36,5 +36,5 @@ coverage.xml
 # ===== Build/Generated =====
 resources/
 .tmp/
-pyproject.sanitized.toml
+*.sanitized.*
 sanitize_pyproject.py
