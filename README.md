@@ -43,41 +43,20 @@ Click a thumbnail to view full image.
 
 ## Installation
 
-### End User (No Tests Included)
+### RELEASE VERSION COMING SOON - FINAL BUG FIX IN PROGRESS
 
-Install with a single command:
+**Requirements:**
 
-```bash
-curl -sSL https://raw.githubusercontent.com/htmlgxn/comfy-imageboard-explorer/main/scripts/install.sh | bash
-```
+[uv](https://docs.astral.sh/uv/) package manager
 
-Open http://127.0.0.1:8000 in a web browser.
-
-**Update:**
-```bash
-imgboard-explorer update
-# or re-run the install command
-```
-
-**Uninstall:**
-```bash
-curl -sSL https://raw.githubusercontent.com/htmlgxn/comfy-imageboard-explorer/main/scripts/install.sh | bash -s -- --uninstall
-# this will also remove development directory - see below
-```
-
-### Development (Full Repository with Tests)
+**Setup and Run:**
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/htmlgxn/comfy-imageboard-explorer/main/scripts/install.sh | bash -s -- --dev
+git clone https://github.com/htmlgxn/comfy-imageboard-explorer.git
+cd comfy-imageboard-explorer
+uv run imgboard-explorer
 ```
-
-**Customize install location:**
-```bash
-# Use environment variable for non-interactive install
-DEV_DIR=~/code/imgboard-explorer curl -sSL https://raw.githubusercontent.com/htmlgxn/comfy-imageboard-explorer/main/scripts/install.sh | bash -s -- --dev
-```
-
-For development setup, testing, and contribution guidelines, see [DEVELOPMENT.md](DEVELOPMENT.md).
+Open http://127.0.0.1/ in your web browser
 
 ## Controls
 
