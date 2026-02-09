@@ -262,7 +262,8 @@ install_regular() {
     
     # Download release
     print_step "Downloading release ${LATEST_VERSION}..."
-    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_VERSION}/imgboard-explorer-${LATEST_VERSION}.tar.gz"
+    VERSION_NUM="${LATEST_VERSION#v}"
+    DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_VERSION}/comfy_imageboard_explorer-${VERSION_NUM}.tar.gz"
     TEMP_DIR=$(mktemp -d)
     
     if ! curl -sL "$DOWNLOAD_URL" -o "$TEMP_DIR/release.tar.gz"; then
@@ -276,7 +277,7 @@ install_regular() {
     VERSION_DIR="$INSTALL_DIR/${LATEST_VERSION}"
     mkdir -p "$VERSION_DIR"
     
-    if ! tar -xzf "$TEMP_DIR/release.tar.gz" -C "$VERSION_DIR"; then
+    if ! tar -xzf "$TEMP_DIR/release.tar.gz" -C "$VERSION_DIR" --strip-components=1; then
         print_error "Failed to extract release"
         rm -rf "$TEMP_DIR" "$VERSION_DIR"
         exit 1
