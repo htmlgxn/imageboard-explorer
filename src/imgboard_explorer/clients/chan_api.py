@@ -3,7 +3,7 @@ import json
 import time
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -12,7 +12,7 @@ import httpx
 class CacheEntry:
     data: Any
     expires_at: float
-    last_modified: str | None
+    last_modified: Optional[str]
 
 
 class TTLCache:
@@ -20,42 +20,32 @@ class TTLCache:
         self._entries: OrderedDict[str, CacheEntry] = OrderedDict()
         self._max_size = max_size
 
-    def get(self, key: str) -> Any | None:
+    def get(self, key: str) -> Optional[Any]:
         entry = self._entries.get(key)
         if not entry:
             return None
         if entry.expires_at <= time.monotonic():
-            del self._entries[key]
             return None
         # Move to end (most recently used)
         self._entries.move_to_end(key)
         return entry.data
 
-    def get_entry(self, key: str) -> CacheEntry | None:
+    def get_entry(self, key: str) -> Optional[CacheEntry]:
         entry = self._entries.get(key)
-        if entry and entry.expires_at <= time.monotonic():
-            del self._entries[key]
-            return None
         if entry:
             self._entries.move_to_end(key)
         return entry
 
     def set(
-        self, key: str, data: Any, ttl_seconds: float, last_modified: str | None
+        self, key: str, data: Any, ttl_seconds: float, last_modified: Optional[str]
     ) -> None:
-        # Evict expired entries first
-        now = time.monotonic()
-        expired = [k for k, v in self._entries.items() if v.expires_at <= now]
-        for k in expired:
-            del self._entries[k]
-
-        # Evict oldest if at capacity
-        while len(self._entries) >= self._max_size:
+        # Evict oldest if at capacity and we're adding a new key
+        if key not in self._entries and len(self._entries) >= self._max_size:
             self._entries.popitem(last=False)
 
         self._entries[key] = CacheEntry(
             data=data,
-            expires_at=now + ttl_seconds,
+            expires_at=time.monotonic() + ttl_seconds,
             last_modified=last_modified,
         )
 
@@ -103,7 +93,7 @@ class ChanAPIClient:
         if self._client is None:
             await self.start()
         assert self._client is not None
-        url = f"{self.base_url}{path}"
+        url = f"{self.base_url}/{path.lstrip('/')}"
         cached = self._cache.get(url)
         if cached is not None:
             return cached

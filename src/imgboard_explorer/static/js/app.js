@@ -322,7 +322,7 @@
       }
       event.preventDefault();
       if (activeRowIndex === -1) {
-        activeRowIndex = event.key.toLowerCase() === 'w' ? 0 : 0;
+        activeRowIndex = event.key.toLowerCase() === 'w' ? linkRows.length - 1 : 0;
         activeLinkIndex = 0;
       } else {
         const delta = event.key.toLowerCase() === 'w' ? -1 : 1;

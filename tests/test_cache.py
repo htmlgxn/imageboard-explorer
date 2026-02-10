@@ -43,3 +43,16 @@ def test_cache_expired_cleanup_on_set() -> None:
     cache.set("b", 2, ttl_seconds=60, last_modified=None)
     assert cache.get("a") is None
     assert cache.get("b") == 2
+
+
+def test_cache_retains_expired_entry_for_get_entry() -> None:
+    cache = TTLCache()
+    cache.set(
+        "key", "data", ttl_seconds=0.01, last_modified="Mon, 10 Feb 2026 11:00:00 GMT"
+    )
+    time.sleep(0.02)
+    assert cache.get("key") is None
+    entry = cache.get_entry("key")
+    assert entry is not None
+    assert entry.data == "data"
+    assert entry.last_modified == "Mon, 10 Feb 2026 11:00:00 GMT"

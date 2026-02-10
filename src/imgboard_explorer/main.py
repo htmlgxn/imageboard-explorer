@@ -2,6 +2,9 @@ import argparse
 import html as html_lib
 import subprocess
 import sys
+from collections.abc import AsyncGenerator
+from typing import Optional
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
@@ -9,7 +12,7 @@ from fastapi import FastAPI, Path as PathParam, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from httpx import HTTPStatusError
+from httpx import HTTPStatusError, TimeoutException
 
 from .clients.chan_api import ChanAPIClient
 from .models import (
@@ -33,21 +36,19 @@ from .text import (
 
 _PACKAGE_DIR = Path(__file__).parent
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+    await client.start()
+    yield
+    await client.aclose()
+
+
+app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=str(_PACKAGE_DIR / "static")), name="static")
 
 templates = Jinja2Templates(directory=str(_PACKAGE_DIR / "templates"))
 client = ChanAPIClient()
-
-
-@app.on_event("startup")
-async def startup() -> None:
-    await client.start()
-
-
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    await client.aclose()
 
 
 def _board_description(board: Board) -> str:
@@ -132,25 +133,38 @@ async def _load_thread_posts(board: str, thread_id: int) -> list[dict]:
 
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request, selected: str | None = None) -> HTMLResponse:
+async def home(request: Request, selected: Optional[str] = None) -> HTMLResponse:
     try:
         boards = await _load_boards()
-    except Exception:
+    except (HTTPStatusError, TimeoutException) as exc:
+        status_code = 502
+        if isinstance(exc, HTTPStatusError):
+            status_code = exc.response.status_code
         return templates.TemplateResponse(
+            request,
             "home.html",
             {
-                "request": request,
                 "screen": "home",
-                "error": "Unable to load boards right now. Please try again.",
+                "error": "Unable to load boards right now. Please try again later.",
             },
-            status_code=502,
+            status_code=status_code,
+        )
+    except Exception:
+        return templates.TemplateResponse(
+            request,
+            "home.html",
+            {
+                "screen": "home",
+                "error": "A server error occurred while loading boards.",
+            },
+            status_code=500,
         )
 
     if not boards:
         return templates.TemplateResponse(
+            request,
             "home.html",
             {
-                "request": request,
                 "screen": "home",
                 "error": "No boards available.",
             },
@@ -172,9 +186,9 @@ async def home(request: Request, selected: str | None = None) -> HTMLResponse:
         )
 
     return templates.TemplateResponse(
+        request,
         "home.html",
         {
-            "request": request,
             "screen": "home",
             "boards": board_items,
             "selected": selected_board.board,
@@ -187,32 +201,44 @@ async def home(request: Request, selected: str | None = None) -> HTMLResponse:
 async def catalog(
     request: Request,
     board: str = PathParam(..., pattern=r"^[a-z]{1,6}$"),
-    selected: int | None = None,
+    selected: Optional[int] = None,
 ) -> HTMLResponse:
     try:
         payload = await client.fetch_json(f"/{board}/catalog.json", ttl_seconds=30)
     except HTTPStatusError as exc:
         status_code = exc.response.status_code
         message = (
-            "Board not found."
+            f"Board /{board}/ not found."
             if status_code == 404
-            else "Unable to load catalog right now."
+            else f"API error ({status_code}) while loading catalog."
         )
         return templates.TemplateResponse(
+            request,
             "catalog.html",
-            {"request": request, "screen": "catalog", "board": board, "error": message},
+            {"screen": "catalog", "board": board, "error": message},
             status_code=status_code,
+        )
+    except TimeoutException:
+        return templates.TemplateResponse(
+            request,
+            "catalog.html",
+            {
+                "screen": "catalog",
+                "board": board,
+                "error": "Request timed out while loading catalog.",
+            },
+            status_code=504,
         )
     except Exception:
         return templates.TemplateResponse(
+            request,
             "catalog.html",
             {
-                "request": request,
                 "screen": "catalog",
                 "board": board,
-                "error": "Unable to load catalog right now.",
+                "error": "An unexpected error occurred while loading the catalog.",
             },
-            status_code=502,
+            status_code=500,
         )
 
     threads = []
@@ -243,9 +269,9 @@ async def catalog(
         selected_id = None
 
     return templates.TemplateResponse(
+        request,
         "catalog.html",
         {
-            "request": request,
             "screen": "catalog",
             "board": board,
             "threads": threads,
@@ -259,37 +285,48 @@ async def thread(
     request: Request,
     board: str = PathParam(..., pattern=r"^[a-z]{1,6}$"),
     thread_id: int = PathParam(..., ge=1),
-    selected: int | None = None,
+    selected: Optional[int] = None,
 ) -> HTMLResponse:
     try:
         posts = await _load_thread_posts(board, thread_id)
     except HTTPStatusError as exc:
         status_code = exc.response.status_code
         message = (
-            "Thread not found."
+            f"Thread {thread_id} not found."
             if status_code == 404
-            else "Unable to load thread right now."
+            else f"API error ({status_code}) while loading thread."
         )
         return templates.TemplateResponse(
+            request,
             "thread.html",
             {
-                "request": request,
                 "screen": "thread",
                 "board": board,
                 "error": message,
             },
             status_code=status_code,
         )
-    except Exception:
+    except TimeoutException:
         return templates.TemplateResponse(
+            request,
             "thread.html",
             {
-                "request": request,
                 "screen": "thread",
                 "board": board,
-                "error": "Unable to load thread right now.",
+                "error": "Request timed out while loading thread.",
             },
-            status_code=502,
+            status_code=504,
+        )
+    except Exception:
+        return templates.TemplateResponse(
+            request,
+            "thread.html",
+            {
+                "screen": "thread",
+                "board": board,
+                "error": "An unexpected error occurred while loading the thread.",
+            },
+            status_code=500,
         )
 
     if posts:
@@ -299,9 +336,9 @@ async def thread(
         selected_id = None
 
     return templates.TemplateResponse(
+        request,
         "thread.html",
         {
-            "request": request,
             "screen": "thread",
             "board": board,
             "posts": posts,
@@ -324,38 +361,49 @@ async def post_view(
     except HTTPStatusError as exc:
         status_code = exc.response.status_code
         message = (
-            "Thread not found."
+            f"Thread {thread_id} not found."
             if status_code == 404
-            else "Unable to load thread right now."
+            else f"API error ({status_code}) while loading thread."
         )
         return templates.TemplateResponse(
+            request,
             "post_view.html",
             {
-                "request": request,
                 "screen": "post",
                 "board": board,
                 "error": message,
             },
             status_code=status_code,
         )
-    except Exception:
+    except TimeoutException:
         return templates.TemplateResponse(
+            request,
             "post_view.html",
             {
-                "request": request,
                 "screen": "post",
                 "board": board,
-                "error": "Unable to load thread right now.",
+                "error": "Request timed out while loading thread.",
             },
-            status_code=502,
+            status_code=504,
+        )
+    except Exception:
+        return templates.TemplateResponse(
+            request,
+            "post_view.html",
+            {
+                "screen": "post",
+                "board": board,
+                "error": "An unexpected error occurred while loading the thread.",
+            },
+            status_code=500,
         )
 
     post = next((item for item in posts if item["no"] == post_id), None)
     if not post:
         return templates.TemplateResponse(
+            request,
             "post_view.html",
             {
-                "request": request,
                 "screen": "post",
                 "board": board,
                 "error": "Post not found.",
@@ -364,9 +412,9 @@ async def post_view(
         )
 
     return templates.TemplateResponse(
+        request,
         "post_view.html",
         {
-            "request": request,
             "screen": "post",
             "board": board,
             "post": post,
@@ -389,38 +437,49 @@ async def post_image(
     except HTTPStatusError as exc:
         status_code = exc.response.status_code
         message = (
-            "Thread not found."
+            f"Thread {thread_id} not found."
             if status_code == 404
-            else "Unable to load thread right now."
+            else f"API error ({status_code}) while loading thread."
         )
         return templates.TemplateResponse(
+            request,
             "image_view.html",
             {
-                "request": request,
                 "screen": "image",
                 "board": board,
                 "error": message,
             },
             status_code=status_code,
         )
-    except Exception:
+    except TimeoutException:
         return templates.TemplateResponse(
+            request,
             "image_view.html",
             {
-                "request": request,
                 "screen": "image",
                 "board": board,
-                "error": "Unable to load thread right now.",
+                "error": "Request timed out while loading thread.",
             },
-            status_code=502,
+            status_code=504,
+        )
+    except Exception:
+        return templates.TemplateResponse(
+            request,
+            "image_view.html",
+            {
+                "screen": "image",
+                "board": board,
+                "error": "An unexpected error occurred while loading the thread.",
+            },
+            status_code=500,
         )
 
     post = next((item for item in posts if item["no"] == post_id), None)
     if not post or not post.get("image_url"):
         return templates.TemplateResponse(
+            request,
             "image_view.html",
             {
-                "request": request,
                 "screen": "image",
                 "board": board,
                 "error": "Image not available.",
@@ -429,9 +488,9 @@ async def post_image(
         )
 
     return templates.TemplateResponse(
+        request,
         "image_view.html",
         {
-            "request": request,
             "screen": "image",
             "board": board,
             "image_url": post["image_url"],

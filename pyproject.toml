@@ -3,7 +3,7 @@ name = "comfy-imageboard-explorer"
 version = "2026.2.9"
 description = "A TUI-style webapp for browsing imageboard content in a simplified view."
 readme = "README.md"
-requires-python = ">=3.14.2"
+requires-python = ">=3.12"
 license = {text = "Unlicense"}
 authors = [
     {name = "Ben Chitty", email = "htmlgxn@pm.me"},
@@ -33,7 +33,7 @@ include = ["src/imgboard_explorer/templates/*", "src/imgboard_explorer/static/**
 
 [tool.ruff]
 line-length = 88
-target-version = "py314"
+target-version = "py312"
 
 [tool.ruff.format]
 quote-style = "double"
@@ -48,7 +48,7 @@ known-first-party = ["imgboard_explorer"]
 combine-as-imports = true
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.12"
 warn_return_any = true
 strict_optional = true
 disallow_untyped_defs = true

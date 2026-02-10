@@ -1,5 +1,6 @@
 import html
 import re
+from typing import Optional
 from urllib.parse import urlparse
 
 _BR_RE = re.compile(r"(<br\s*/?>)+", re.IGNORECASE)
@@ -7,7 +8,7 @@ _QUOTELINK_RE = re.compile(r'<a[^>]*class="quotelink"[^>]*>(.*?)</a>', re.IGNORE
 _TAG_RE = re.compile(r"<[^>]+>")
 _QUOTE_MARK_RE = re.compile(r"&gt;&gt;(\d+)")
 _QUOTE_TEXT_RE = re.compile(r">>(\d+)")
-_URL_RE = re.compile(r"(https?://[^\s<]+)")
+_URL_RE = re.compile(r"(https?://[^\s<]+[^.,!?;:\s<])")
 
 
 def _is_safe_url(url: str) -> bool:
@@ -19,7 +20,7 @@ def _is_safe_url(url: str) -> bool:
         return False
 
 
-def html_to_text(raw: str | None) -> str:
+def html_to_text(raw: Optional[str]) -> str:
     if not raw:
         return ""
     text = raw.replace("<wbr>", "")
@@ -88,18 +89,48 @@ def strip_header_quotes(text: str) -> str:
 
 
 def text_to_html(text: str) -> str:
-    escaped = html.escape(text)
+    # Use placeholders to handle URLs and quotes before HTML escaping
+    # to avoid issues with escaped characters (like & and ;) being matched/broken.
+    placeholders: list[str] = []
+
+    def add_placeholder(token: str, is_quote: bool) -> str:
+        idx = len(placeholders)
+        if is_quote:
+            # token is just the quote ID
+            placeholders.append(
+                f'<span class="nav-link link-quote" data-quote-id="{token}">&gt;&gt;{token}</span>'
+            )
+        else:
+            # token is the full URL
+            escaped_url = html.escape(token)
+            placeholders.append(
+                f'<span class="nav-link link-external" data-url="{escaped_url}">{escaped_url}</span>'
+            )
+        return f"__PH_{idx}__"
+
+    combined_re = re.compile(f"({_URL_RE.pattern}|{_QUOTE_TEXT_RE.pattern})")
+
+    def replace_token(match: re.Match[str]) -> str:
+        token = match.group(0)
+        url_match = _URL_RE.fullmatch(token)
+        if url_match and _is_safe_url(url_match.group(1)):
+            return add_placeholder(token, False)
+
+        quote_match = _QUOTE_TEXT_RE.fullmatch(token)
+        if quote_match:
+            return add_placeholder(quote_match.group(1), True)
+
+        return token
+
+    # 1. Identify and replace with placeholders in raw text
+    processed = combined_re.sub(replace_token, text)
+
+    # 2. Escape the rest of the text and convert newlines
+    escaped = html.escape(processed)
     escaped = escaped.replace("\n", "<br>")
-    escaped = _QUOTE_MARK_RE.sub(
-        r'<span class="nav-link link-quote" data-quote-id="\1">&gt;&gt;\1</span>',
-        escaped,
-    )
 
-    def replace_url(match: re.Match[str]) -> str:
-        url = match.group(1)
-        if _is_safe_url(url):
-            return f'<span class="nav-link link-external" data-url="{url}">{url}</span>'
-        return url
+    # 3. Restore placeholders
+    for i, ph_content in enumerate(placeholders):
+        escaped = escaped.replace(f"__PH_{i}__", ph_content)
 
-    escaped = _URL_RE.sub(replace_url, escaped)
     return escaped

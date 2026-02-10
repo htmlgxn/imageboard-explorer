@@ -18,6 +18,39 @@ def test_text_to_html_wraps_quotes() -> None:
     assert 'data-quote-id="123456"' in rendered
 
 
+def test_text_to_html_handles_url_with_quotes() -> None:
+    text = "Check http://example.com/?id=>>123"
+    rendered = text_to_html(text)
+    # The whole URL should be matched as a link-external, not containing a link-quote span
+    assert 'class="nav-link link-external"' in rendered
+    assert 'data-url="http://example.com/?id=&gt;&gt;123"' in rendered
+    assert 'class="nav-link link-quote"' not in rendered
+
+
+def test_text_to_html_handles_multiple_quotes() -> None:
+    text = ">>123 >>456"
+    rendered = text_to_html(text)
+    assert rendered.count('class="nav-link link-quote"') == 2
+    assert 'data-quote-id="123"' in rendered
+    assert 'data-quote-id="456"' in rendered
+
+
+def test_text_to_html_handles_quotes_with_other_text() -> None:
+    text = "Some text >>123 more text >>456"
+    rendered = text_to_html(text)
+    assert "Some text " in rendered
+    assert " more text " in rendered
+    assert 'data-quote-id="123"' in rendered
+    assert 'data-quote-id="456"' in rendered
+
+
+def test_text_to_html_handles_url_with_trailing_punctuation() -> None:
+    text = "Check http://example.com/."
+    rendered = text_to_html(text)
+    assert 'data-url="http://example.com/"' in rendered
+    assert "</span>." in rendered
+
+
 def test_extract_quotes_header_and_body() -> None:
     text = ">>1111 >>2222\n>>3333\nHello >>4444 world\n>>5555"
     header, body = extract_quotes(text)
