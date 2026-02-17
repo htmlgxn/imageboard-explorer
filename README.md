@@ -1,4 +1,4 @@
-# comfy-imageboard-explorer
+# imageboard-explorer
 
 A TUI-style webapp for browsing imageboard content in a simplified view. Built with FastAPI + Jinja and the [4chan read-only API](https://github.com/4chan/4chan-API/).
 
