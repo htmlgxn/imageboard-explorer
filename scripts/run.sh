@@ -1,5 +1,5 @@
 #!/bin/bash
-# Launcher script for installed imgboard-explorer
+# Launcher script for installed imageboard-explorer
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR/.." && exec uv run imgboard-explorer "$@"
+cd "$SCRIPT_DIR/.." && exec uv run imageboard-explorer "$@"

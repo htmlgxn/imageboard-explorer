@@ -1,6 +1,6 @@
 # Development Guide
 
-This guide covers how to set up the development environment and contribute to comfy-imageboard-explorer.
+This guide covers how to set up the development environment and contribute to imageboard-explorer.
 
 ## Installation
 
@@ -13,8 +13,8 @@ This guide covers how to set up the development environment and contribute to co
 If not already downloaded:
 
 ```bash
-git clone https://github.com/htmlgxn/comfy-imageboard-explorer.git
-cd comfy-imageboard-explorer
+git clone https://github.com/htmlgxn/imageboard-explorer.git
+cd imageboard-explorer
 ```
 
 Sync all dependancies including development dependancies:
@@ -25,7 +25,7 @@ uv sync --dev
 
 To run:
 ```bash
-uv run imgboard-explorer
+uv run imageboard-explorer
 ````
 
 Open http://127.0.0.1/ in your web browser
@@ -33,7 +33,7 @@ Open http://127.0.0.1/ in your web browser
 For development with auto-reload:
 
 ```bash
-uv run uvicorn imgboard_explorer.main:app --reload
+uv run uvicorn imageboard_explorer.main:app --reload
 ```
 
 ## Running Tests
@@ -65,7 +65,7 @@ uv run mypy src/ tests/
 ## Project Structure
 
 ```
-src/imgboard_explorer/
+src/imageboard_explorer/
 ├── __init__.py
 ├── main.py           # FastAPI app and routes
 ├── models.py         # Pydantic models and helpers

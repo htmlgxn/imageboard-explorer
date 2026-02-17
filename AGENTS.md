@@ -1,4 +1,4 @@
-# AGENTS.md - Coding Guidelines for comfy-imageboard-explorer
+# AGENTS.md - Coding Guidelines for imageboard-explorer
 
 This document provides guidelines for AI coding agents working on this repository.
 
@@ -6,10 +6,10 @@ This document provides guidelines for AI coding agents working on this repositor
 
 ```bash
 # Run the application (default: 127.0.0.1:8000)
-uv run imgboard-explorer
+uv run imageboard-explorer
 
 # Run with auto-reload (development)
-uv run uvicorn imgboard_explorer.main:app --reload
+uv run uvicorn imageboard_explorer.main:app --reload
 
 # Run all tests
 uv run --dev pytest tests/ -v
@@ -113,13 +113,13 @@ except Exception:  # Too broad!
 
 - Write tests in `tests/test_*.py` files
 - Use simple functions (no classes required)
-- Import from `imgboard_explorer.module`, not `app.module`
+- Import from `imageboard_explorer.module`, not `app.module`
 - Test function names: `test_descriptive_name()`
 - Use assertions, no need for complex fixtures for simple tests
 
 Example:
 ```python
-from imgboard_explorer.text import html_to_text
+from imageboard_explorer.text import html_to_text
 
 def test_html_to_text_strips_br():
     raw = "Hello<br>World"
@@ -129,7 +129,7 @@ def test_html_to_text_strips_br():
 ## Project Structure
 
 ```
-src/imgboard_explorer/
+src/imageboard_explorer/
 ├── __init__.py
 ├── main.py           # FastAPI app, routes (keep lean)
 ├── models.py         # Pydantic models, helper functions

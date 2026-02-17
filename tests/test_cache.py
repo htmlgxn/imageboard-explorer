@@ -1,6 +1,6 @@
 import time
 
-from imgboard_explorer.clients.chan_api import TTLCache
+from imageboard_explorer.clients.chan_api import TTLCache
 
 
 def test_cache_expires() -> None:

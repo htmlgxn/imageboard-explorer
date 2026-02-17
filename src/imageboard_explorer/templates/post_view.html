@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <section class="thread">
+    <div class="thread-header">/{{ board }}/</div>
+    {% if error %}
+      <div class="error-panel">{{ error }}</div>
+    {% else %}
+      <div class="post-list">
+        <article
+          class="post-card selectable selected"
+          data-post-id="{{ post.no }}"
+          data-quotes-header="{{ post.quotes_header | join(',') }}"
+          data-quotes-body="{{ post.quotes_body | join(',') }}"
+          {% if post.image_full_href %}data-href="{{ post.image_full_href }}"{% endif %}
+        >
+          <div class="post-thumb">
+            {% if post.thumbnail_url %}
+              <img src="{{ post.thumbnail_url }}" alt="thumbnail" referrerpolicy="no-referrer">
+            {% else %}
+              <img src="/static/img/placeholder.svg" alt="placeholder" referrerpolicy="no-referrer">
+            {% endif %}
+          </div>
+          <div class="post-body">
+            <div class="post-meta">
+              <span class="post-name">{{ post.name }}</span>
+              {% if post.country_flag_url %}
+                <img class="country-flag" src="{{ post.country_flag_url }}" alt="{{ post.country_name or post.country }}" title="{{ post.country_name or post.country }}" referrerpolicy="no-referrer">
+              {% endif %}
+              <span class="post-now">{{ post.now }}</span>
+              <span class="post-no">No.{{ post.no }}</span>
+              {% if post.reply_from %}
+                <span class="reply-from">
+                  {% for reply_id in post.reply_from %}
+                    <span class="nav-link link-quote reply-from-link" data-quote-id="{{ reply_id }}">&gt;&gt;{{ reply_id }}</span>
+                  {% endfor %}
+                </span>
+              {% endif %}
+            </div>
+            {% if post.quotes_header %}
+              <div class="quote-bar">
+                {% for quote_id in post.quotes_header %}
+                  <span class="nav-link link-quote quote-header" data-quote-id="{{ quote_id }}">&gt;&gt;{{ quote_id }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+            <div class="post-text">{{ post.comment_html | safe }}</div>
+            {% if post.image_url %}
+              <div class="post-view-image">
+                {% if post.media_kind == "video" %}
+                  <video src="{{ post.image_url }}" controls referrerpolicy="no-referrer"></video>
+                {% elif post.media_kind == "image" %}
+                  <img src="{{ post.image_url }}" alt="full image" referrerpolicy="no-referrer">
+                {% else %}
+                  <div class="media-file">
+                    <div class="media-file-name">{{ post.file_name or "Attachment" }}</div>
+                    {% if post.file_size %}
+                      <div class="media-file-size">{{ post.file_size }}</div>
+                    {% endif %}
+                    <a class="media-file-link" href="{{ post.image_url }}" target="_blank" rel="noopener" referrerpolicy="no-referrer">Open file</a>
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </article>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}
+
+{% block status %}
+  <span class="status-item"><span class="key">h</span><span class="label">home</span></span>
+  <span class="status-item"><span class="key">backspace</span><span class="label">back</span></span>
+  <span class="status-item"><span class="key">WASD</span><span class="label">select link</span></span>
+  <span class="status-item"><span class="key">e</span><span class="label">open link</span></span>
+  {% if post.image_url %}
+    <span class="status-item"><span class="key">enter</span><span class="label">full image</span></span>
+  {% endif %}
+{% endblock %}

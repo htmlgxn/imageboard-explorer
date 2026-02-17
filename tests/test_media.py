@@ -1,4 +1,4 @@
-from imgboard_explorer.models import format_bytes, media_kind
+from imageboard_explorer.models import format_bytes, media_kind
 
 
 def test_media_kind() -> None:

@@ -1,4 +1,4 @@
-from imgboard_explorer.models import country_flag_url, image_url, thumbnail_url
+from imageboard_explorer.models import country_flag_url, image_url, thumbnail_url
 
 
 def test_thumbnail_url() -> None:

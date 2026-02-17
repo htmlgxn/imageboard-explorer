@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <section class="catalog">
+    <div class="catalog-side">select thread</div>
+    <div class="catalog-header">/{{ board }}/</div>
+    {% if error %}
+      <div class="error-panel">{{ error }}</div>
+    {% else %}
+      <div class="list-window">
+        <div class="thread-list">
+          {% for thread in threads %}
+            <article
+              class="thread-card selectable {% if thread.no == selected %}selected{% endif %}"
+              data-href="/board/{{ board }}/thread/{{ thread.no }}"
+            >
+              <div class="thread-thumb">
+                {% if thread.thumbnail_url %}
+                  <img src="{{ thread.thumbnail_url }}" alt="thumbnail">
+                {% else %}
+                  <img src="/static/img/placeholder.svg" alt="placeholder">
+                {% endif %}
+              </div>
+              <div class="thread-body">
+              <div class="thread-meta">
+                <span class="thread-name">{{ thread.name }}</span>
+                {% if thread.country_flag_url %}
+                  <img class="country-flag" src="{{ thread.country_flag_url }}" alt="{{ thread.country_name or thread.country }}" title="{{ thread.country_name or thread.country }}" referrerpolicy="no-referrer">
+                {% endif %}
+                <span class="thread-now">{{ thread.now }}</span>
+                <span class="thread-no">No.{{ thread.no }}</span>
+              </div>
+                {% if thread.sub %}
+                  <div class="thread-subject">{{ thread.sub }}</div>
+                {% endif %}
+                <div class="thread-text">{{ thread.comment_html | safe }}</div>
+                {% if thread.replies is not none %}
+                  <div class="thread-stats">{{ thread.replies }} replies{% if thread.images is not none %}, {{ thread.images }} images{% endif %}</div>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}
+
+{% block status %}
+  <span class="status-item"><span class="key">h</span><span class="label">home</span></span>
+  <span class="status-item"><span class="key">↑/↓</span><span class="label">move</span></span>
+  <span class="status-item"><span class="key">enter</span><span class="label">open thread</span></span>
+  <span class="status-item"><span class="key">backspace</span><span class="label">back</span></span>
+{% endblock %}

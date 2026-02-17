@@ -1,4 +1,4 @@
-from imgboard_explorer.text import (
+from imageboard_explorer.text import (
     extract_all_quotes,
     extract_quotes,
     html_to_text,
